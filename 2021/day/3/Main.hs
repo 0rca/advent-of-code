@@ -1,13 +1,20 @@
+{-# LANGUAGE DeriveFoldable #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TypeOperators #-}
 
 module Main where
 
+import qualified Data.Foldable as Foldable
 import Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as IntMap
 import Data.Monoid
 import System.Environment
 
--------------------------------------------------------------------------------
+------------------- Part I ----------------------------------------------------
 -- Direct implementation without too many abstractions
 --
 
@@ -30,7 +37,7 @@ newState = State 0 IntMap.empty
 readInput = getContents
 
 ans1 input =
-    let State{ counters } = go newState input
+    let State{counters} = go newState input
         (maxPower, _) = IntMap.findMax counters
         (gamma, epsilon) = rates maxPower counters
      in gamma * epsilon
@@ -62,7 +69,102 @@ rates maxPower counters =
             then (gamma + 2 ^ (maxPower - power), epsilon)
             else (gamma, epsilon + 2 ^ (maxPower - power))
 
-ans2 = undefined
+-------------------------- Part II --------------------------------------------
+
+data Binary where
+    O :: Binary
+    I :: Binary
+    (:>) :: Binary -> Binary -> Binary
+    deriving (Eq, Show)
+
+infixr 5 :>
+
+data BinTree where
+    X :: Binary -> BinTree
+    L :: Binary -> BinTree -> BinTree
+    Y :: BinTree -> BinTree -> BinTree
+    deriving (Eq, Show)
+
+binaryToTree :: Binary -> BinTree
+binaryToTree O = X O
+binaryToTree I = X I
+binaryToTree (I :> bin) = L I (binaryToTree bin)
+binaryToTree (O :> bin) = L O (binaryToTree bin)
+
+instance Semigroup BinTree where
+    X x0 <> X x1
+        | x0 == x1 = X x0
+        | otherwise = Y (X O) (X I)
+    L x0 t0 <> L x1 t1
+        | x0 == x1 = L x0 (t0 <> t1)
+        | x0 == O = Y (L x0 t0) (L x1 t1)
+        | otherwise = Y (L x1 t1) (L x0 t0)
+    Y t0 t1 <> Y t2 t3 = Y (t0 <> t2) (t1 <> t3)
+    Y t0 t1 <> L O t2 = Y (L O t2 <> t0) t1
+    Y t0 t1 <> L I t2 = Y t0 (L I t2 <> t1)
+    l@(L _ _) <> r@(Y _ _) = r <> l
+    a <> b =
+        error ("unhandled input: " <> show a <> " <> " <> show b)
+
+strToBinary :: String -> Binary
+strToBinary ['1'] = I
+strToBinary ['0'] = O
+strToBinary ('0' : xs) = O :> strToBinary xs
+strToBinary ('1' : xs) = I :> strToBinary xs
+
+mkTree input = foldr1 (<>) (fmap (binaryToTree . strToBinary) input)
+
+treeLen :: BinTree -> Int
+treeLen (X _) = 1
+treeLen (L _ t) = treeLen t
+treeLen (Y l r) = treeLen l + treeLen r
+
+ppr :: Int -> BinTree -> IO ()
+ppr i (X x) = putStrLn (replicate i ' ' <> show x)
+ppr i (L x t) = putStrLn (replicate i ' ' <> show x) >> ppr (i + 1) t
+ppr i (Y l r) = do
+    ppr i l
+    ppr i r
+
+oxyRating tree = binToInt (go [] tree)
+  where
+    go bin (Y l r) =
+        if treeLen r >= treeLen l
+        then go bin r
+        else go bin l
+    go bin (L b t)
+        | b == I = go (1 : bin) t
+        | otherwise = go (0 : bin) t
+    go bin (X b)
+        | b == I = 1 : bin
+        | otherwise = 0 : bin
+
+co2Rating tree = binToInt (go [] tree)
+  where
+    go bin (Y l r) =
+        if treeLen r >= treeLen l
+        then go bin l
+        else go bin r
+    go bin (L b t) =
+        case b of
+            I -> go (1 : bin) t
+            O -> go (0 : bin) t
+    go bin (X b) =
+        case b of
+            I -> 1 : bin
+            O -> 0 : bin
+
+binToInt xs = go 0 xs
+  where
+    go pow (x : xs) = x * 2 ^ pow + go (pow + 1) xs
+    go _ [] = 0
+
+readInput2 = lines <$> getContents
+
+ans2 :: [String] -> Int
+ans2 input =
+    let tree = mkTree input
+    in (oxyRating tree * co2Rating tree)
 
 main = do
     args <- getArgs
@@ -70,9 +172,26 @@ main = do
         ["1"] ->
             print =<< ans1 <$> readInput
         ["2"] ->
-            error "not implemented"
-            -- print =<< ans2 <$> readInput
+            print =<< ans2 <$> readInput2
         _ ->
             print "Usage: cabal run day3 1|2 < input.txt"
 
+input =
+    [ "00100"
+    , "11110"
+    , "10110"
+    , "10111"
+    , "10101"
+    , "01111"
+    , "00111"
+    , "11100"
+    , "10000"
+    , "11001"
+    , "00010"
+    , "01010"
+    ]
 
+test = and [
+    length input == treeLen (mkTree input),
+    ans2 input == 230
+    ]
