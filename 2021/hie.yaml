@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "./day/1"
+      component: "aoc2021:exe:day1"
+
+    - path: "./day/2"
+      component: "aoc2021:exe:day2"
+
+    - path: "./day/3"
+      component: "aoc2021:exe:day3"
