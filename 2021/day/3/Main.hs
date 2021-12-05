@@ -8,6 +8,7 @@
 
 module Main where
 
+import Data.Foldable (foldl')
 import qualified Data.Foldable as Foldable
 import Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as IntMap
@@ -130,8 +131,8 @@ oxyRating tree = binToInt (go [] tree)
   where
     go bin (Y l r) =
         if treeLen r >= treeLen l
-        then go bin r
-        else go bin l
+            then go bin r
+            else go bin l
     go bin (L b t)
         | b == I = go (1 : bin) t
         | otherwise = go (0 : bin) t
@@ -143,8 +144,8 @@ co2Rating tree = binToInt (go [] tree)
   where
     go bin (Y l r) =
         if treeLen r >= treeLen l
-        then go bin l
-        else go bin r
+            then go bin l
+            else go bin r
     go bin (L b t) =
         case b of
             I -> go (1 : bin) t
@@ -161,11 +162,21 @@ binToInt xs = go 0 xs
 
 readInput2 = lines <$> getContents
 
+readInput3 :: IO [[Int]]
+readInput3 = do
+    ls <- lines <$> getContents
+    return (fmap (fmap toInt) ls)
+
 ans2 :: [String] -> Int
 ans2 input =
     let tree = mkTree input
-    in (oxyRating tree * co2Rating tree)
+     in (oxyRating tree * co2Rating tree)
 
+ans3 :: [[Int]] -> Int
+ans3 input =
+    let ox = oxy_rate [] input
+        co = co_rate [] input
+     in (binToInt ox * binToInt co)
 main = do
     args <- getArgs
     case args of
@@ -173,8 +184,10 @@ main = do
             print =<< ans1 <$> readInput
         ["2"] ->
             print =<< ans2 <$> readInput2
+        ["2a"] ->
+            print =<< ans3 <$> readInput3
         _ ->
-            print "Usage: cabal run day3 1|2 < input.txt"
+            print "Usage: cabal run day3 1|2|2a < input.txt"
 
 input =
     [ "00100"
@@ -191,7 +204,56 @@ input =
     , "01010"
     ]
 
-test = and [
-    length input == treeLen (mkTree input),
-    ans2 input == 230
-    ]
+test =
+    and
+        [ length input == treeLen (mkTree input)
+        , ans2 input == 230
+        ]
+
+------------------------- Simpler take on the Day 3: No Trees ------------------
+
+-- >>> reverse (oxy_rate [] input)
+-- [1,0,1,1,1]
+
+-- transpose :: [[a]] -> [_]
+oxy_rate bin [] = bin
+oxy_rate bin [rem] = foldl (flip (:)) bin rem
+oxy_rate bin xs =
+    let hs = heads xs
+        filteredBy pred xs = map snd $ filter (\(counters, _) -> pred counters > 0) xs
+     in case hs of
+            [] ->
+                bin
+            _ ->
+                case foldMap fst hs of
+                    Bin z o ->
+                        if o >= z
+                            then oxy_rate (1 : bin) (filteredBy n_one hs)
+                            else oxy_rate (0 : bin) (filteredBy n_zero hs)
+
+co_rate bin [] = bin
+co_rate bin [rem] = foldl (flip (:)) bin rem
+co_rate bin xs =
+    let hs = heads xs
+        filteredBy pred xs = map snd $ filter (\(counters, _) -> pred counters > 0) xs
+     in case hs of
+            [] ->
+                bin
+            _ ->
+                case foldMap fst hs of
+                    Bin z o ->
+                        if z <= o
+                            then co_rate (0 : bin) (filteredBy n_zero hs)
+                            else co_rate (1 : bin) (filteredBy n_one hs)
+
+heads :: [[Int]] -> [(Bin, [Int])]
+heads xs = do
+    l <- xs
+    case l of
+        (0 : t) -> return (Bin 1 0, t)
+        (1 : t) -> return (Bin 0 1, t)
+        _ -> []
+
+toInt '0' = 0
+toInt '1' = 1
+toInt x = error ("invalid input: " <> show x)
