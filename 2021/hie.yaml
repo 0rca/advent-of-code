@@ -11,3 +11,6 @@ cradle:
 
     - path: "./day/4"
       component: "aoc2021:exe:day4"
+
+    - path: "./day/5"
+      component: "aoc2021:exe:day5"
