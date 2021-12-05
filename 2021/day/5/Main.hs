@@ -116,39 +116,80 @@ test = ans1 (addLine Map.empty [(0, 0), (0, 0), (1, 1), (1, 1), (10, 10)])
 -- >>> test
 -- 2
 
-{-  which looks about right.
+-- Let's use this hack that turns input string into readable pair of tuples (points)
+-- >>> reformat "0,9 -> 5,9"
+-- "((0,9 ), ( 5,9))"
 
-Now, on to parsing. We need to read "0,9 -> 5,9" into a list of points.
-First, let's read four integers from the input:
--}
-readInts :: String -> [Int]
-readInts input =
-  case reads input of
-    [(i, input')] -> i : readInts (dropWhile (not . isDigit) input')
-    _ -> []
+reformat :: String -> String
+reformat str = "((" <> concatMap replace str <> "))"
+ where
+  replace '-' = "),"
+  replace '>' = " ("
+  replace c = [c]
+
+readPoints :: String -> (Point, Point)
+readPoints str = read (reformat str)
 
 -- >>> readInts "0,9 -> 5,9"
 -- [0,9,5,9]
 
 -- Then turn the digits into a line:
 
-mkLine [x0, y0, x1, y1]
+mkLine ((x0, y0), (x1, y1))
   | (x1, y1) >= (x0, y0) = [(x, y) | x <- [x0 .. x1], y <- [y0 .. y1]]
-  | otherwise = mkLine [x1, y1, x0, y0]
-mkLine e = error ("invalid input: " <> show e)
+  | otherwise = mkLine ((x1, y1), (x0, y0))
 
-hvOnly [x0, y0, x1, y1] = y0 == y1 || x0 == x1
-hvOnly e = error ("invalid input: " <> show e)
+-- >>> mkLine [0, 0, 1, 1]
+
+hvOnly ((x0, y0), (x1, y1)) = y0 == y1 || x0 == x1
 
 -- >>> mkLine <$> (filter hvOnly (readInts <$> ["0,9 -> 5,9"]))
+
+mkMap :: ((Point, Point) -> [Point]) -> [String] -> Field
+mkMap mkPoints lines =
+  let pts = map mkPoints (readPoints <$> lines)
+   in foldl' addLine Map.empty pts
+
+mkPoints1 :: (Point, Point) -> [Point]
+mkPoints1 ps =
+  if hvOnly ps
+    then mkLine ps
+    else []
+
+mkPoints2 :: (Point, Point) -> [Point]
+mkPoints2 ps =
+  case mkPoints1 ps of
+    [] ->
+      mkDiagonal ps
+    points ->
+      points
 
 main = do
   args <- getArgs
   case args of
     ["1"] -> do
       ls <- lines <$> getContents
-      let pts = mkLine <$> filter hvOnly (readInts <$> ls)
-          map = foldl' addLine Map.empty pts
-      print (ans1 map)
+      print (ans1 (mkMap mkPoints1 ls))
+    ["2"] -> do
+      ls <- lines <$> getContents
+      print (ans1 (mkMap mkPoints2 ls))
     _ ->
       print ("Usage: cabal run day5 1|2 < input.txt")
+
+------------------------------- Part II ----------------------------------------
+
+-- Diagonal lines: if the ratio of x / y is 1
+
+mkDiagonal ((x0, y0), (x1, y1)) =
+  let dx = x1 - x0
+      dy = y1 - y0
+   in if dx == 0 || dy == 0 || abs dx /= abs dy
+        then []
+        else reverse (go (x0, y0) (x1, y1) (dx `div` abs dx, dy `div` abs dy) [])
+ where
+  go p0@(x0, y0) p1 (dx, dy) path
+    | p0 == p1 = p1 : path
+    | otherwise = go (x0 + dx, y0 + dy) p1 (dx, dy) (p0 : path)
+
+-- >>> mkDiagonal (0,4) (4,0)
+-- [(0,4),(1,3),(2,2),(3,1),(4,0)]
