@@ -3,3 +3,9 @@
 ```
 cabal run day1|day2|...
 ```
+
+or
+
+```
+cargo run --example day1|day2|...
+```
