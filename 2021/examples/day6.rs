@@ -1,6 +1,7 @@
 use std::io::{self, BufRead};
 use std::str::FromStr;
 
+// shift all numbers towards 0, and initialize cells 6 and 8 with new spawns
 fn step(state: &mut [&mut u64; 9]) {
     let new_spawns = &state[0].clone();
     for i in 0..8 {
