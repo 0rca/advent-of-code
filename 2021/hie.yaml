@@ -1,19 +1,19 @@
 cradle:
   cabal:
-    - path: "./day/1"
+    - path: "./haskell/day1"
       component: "aoc2021:exe:day1"
 
-    - path: "./day/2"
+    - path: "./haskell/day2"
       component: "aoc2021:exe:day2"
 
-    - path: "./day/3"
+    - path: "./haskell/day3"
       component: "aoc2021:exe:day3"
 
-    - path: "./day/4"
+    - path: "./haskell/day4"
       component: "aoc2021:exe:day4"
 
-    - path: "./day/5"
+    - path: "./haskell/day5"
       component: "aoc2021:exe:day5"
 
-    - path: "./day/6"
+    - path: "./haskell/day6"
       component: "aoc2021:exe:day6"

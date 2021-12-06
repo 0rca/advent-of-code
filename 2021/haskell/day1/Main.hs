@@ -95,15 +95,16 @@ sumExactly n xs = go n 0 xs
     go _ _ [] = Nothing
     go n acc (x : xs) = go (n - 1) (x + acc) xs
 
--- | esoteric solution: scanl1 for sums, fixpoint function for factoring out
--- recursion
+{- | esoteric solution: scanl1 for sums, fixpoint function for factoring out
+ recursion
+-}
 ans5 xs =
     ans1
         ( fix
             ( \rec xs ->
                 if length xs < 3
-                then []
-                else scanl1 (+) xs !! 2 : rec (tail xs)
+                    then []
+                    else scanl1 (+) xs !! 2 : rec (tail xs)
             )
             xs
         )
