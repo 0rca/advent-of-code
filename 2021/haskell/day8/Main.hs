@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-
 module Main where
 
 import Data.HashMap.Strict (HashMap, (!))
