@@ -26,3 +26,6 @@ cradle:
 
     - path: "./haskell/day9"
       component: "aoc2021:exe:day9"
+
+    - path: "./haskell/day10"
+      component: "aoc2021:exe:day10"
