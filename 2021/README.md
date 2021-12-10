@@ -2,12 +2,13 @@
 
 ## Completion progress
 
-|         |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  | 10  | 11  | 12  | 13  | 14  | 15  | 16  | 17  | 18  | 19  | 20  | 21  | 22  | 23  | 24  | 25  |
+|         | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | 10  | 11  | 12  | 13  | 14  | 15  | 16  | 17  | 18  | 19  | 20  | 21  | 22  | 23  | 24  | 25  |
 | ------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Haskell |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |
-| Rust    |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |  ∎  |
-| OCaml   |  ∎  |     |     |     |     |  ∎  |  ∎  |     |
-| Elixir  |  ∎  |
+| Haskell | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   |
+| Rust    | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   | ∎   |
+| OCaml   | ∎   |     |     |     |     | ∎   | ∎   |     |
+| Elixir  | ∎   |
+| Zig     | ∎   |
 
 ## Haskell
 
@@ -31,4 +32,12 @@ dune exec ocaml/day1.exe < input.txt
 
 ```
 elixir elixir/day1.exs 1 < input.txt
+```
+
+# Zig
+
+Zig AoC template is borrowed from https://github.com/SpexGuy/Zig-AoC-Template
+
+```
+zig build day01 ...
 ```
