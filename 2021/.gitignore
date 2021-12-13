@@ -7,3 +7,4 @@ build
 zig-cache
 zig-out
 data
+*.zig

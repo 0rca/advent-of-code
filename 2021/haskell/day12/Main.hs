@@ -3,23 +3,40 @@ module Main where
 import Control.Monad (guard)
 import qualified Data.Char as Char
 import Data.List (findIndex, intersperse)
+import qualified Debug.Trace as Debug
 
-data Vertex = Start | End | Cave String deriving (Eq, Show)
+import Data.Map (Map)
+import qualified Data.Map.Strict as Map
+
+data Vertex = Start | End | Cave String deriving (Eq, Ord, Show)
 type Edge = (Vertex, Vertex)
 newtype Graph = Graph {unGraph :: [Edge]} deriving (Show)
 
-canRevisit :: Vertex -> Bool
-canRevisit (Cave c) = all Char.isUpper c
-canRevisit _ = False
+isBigCave :: Vertex -> Bool
+isBigCave (Cave c) = all Char.isUpper c
+isBigCave _ = False
 
-paths :: Vertex -> Vertex -> Graph -> [Vertex] -> [[Vertex]]
-paths a b (Graph edges) visited = do
+paths :: Vertex -> Vertex -> Graph -> ([Vertex] -> Bool) -> [Vertex] -> [[Vertex]]
+paths a b (Graph edges) pred visited = do
     (c, d) <- edges
     guard (a == c)
-    guard (canRevisit d || d `notElem` visited)
+    guard (isBigCave c || c `notElem` visited || pred visited)
     if b == d
         then return (reverse (d : c : visited))
-        else paths d b (Graph edges) (c : visited)
+        else paths d b (Graph edges) pred (c : visited)
+
+visitPermitted :: [Vertex] -> Bool
+visitPermitted xs = go Map.empty xs
+  where
+    go acc [] = True
+    go acc (Start : xs) = go acc xs
+    go acc (End : xs) = go acc xs
+    go acc (x : xs)
+        | isBigCave x = go acc xs
+    go acc (x : xs) =
+        case Map.lookup x acc of
+            Nothing -> go (Map.insert x () acc) xs
+            Just () -> False
 
 showPath :: [Vertex] -> String
 showPath vertices = concat $ intersperse "," $ fmap showVertex vertices
@@ -56,6 +73,10 @@ getGraph = do
 main :: IO ()
 main = do
     graph <- getGraph
-    let ps = showPath <$> (paths Start End graph [])
+    let ps = showPath <$> (paths Start End graph (const False) [])
     -- mapM_ print ps
-    putStrLn ("Total paths: " <> show (length ps))
+    putStrLn ("Answer 1: " <> show (length ps))
+
+    let ps2 = showPath <$> (paths Start End graph visitPermitted [])
+    -- mapM_ print ps2
+    putStrLn ("Answer 2: " <> show (length ps2))
