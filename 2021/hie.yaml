@@ -32,3 +32,6 @@ cradle:
 
     - path: "./haskell/day11"
       component: "aoc2021:exe:day11"
+
+    - path: "./haskell/day12"
+      component: "aoc2021:exe:day12"
