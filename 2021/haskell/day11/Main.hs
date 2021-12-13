@@ -3,6 +3,7 @@ module Main where
 import Control.Monad (forM_)
 
 import Data.Foldable (foldl')
+import qualified Data.List as List
 import Data.Map.Strict (Map, (!))
 import qualified Data.Map.Strict as Map
 import Data.Maybe (maybeToList)
@@ -56,6 +57,10 @@ countFlashes :: Cave Int -> Int
 countFlashes cave =
     sum (fmap (\x -> if x == 0 then 1 else 0) cave)
 
+everybodyFlashBang :: Cave Int -> Bool
+everybodyFlashBang cave =
+    100 == countFlashes cave
+
 printState :: [Cave Int] -> Int -> IO ()
 printState states n = do
     putStrLn ("--- " <> show n <> " ---")
@@ -78,7 +83,13 @@ main = do
     cave <- readInput
     let states = iterate step cave
 
-    mapM_ (printState states) [0 .. 9]
-    mapM_ (printState states) [10, 20 .. 100]
+    -- mapM_ (printState states) [0 .. 9]
+    -- mapM_ (printState states) [10, 20 .. 100]
 
     putStrLn ("Answer 1: " <> show (sum (countFlashes <$> take 101 states)))
+
+    case List.findIndex everybodyFlashBang states of
+        Nothing -> error "unreachable: infinite list"
+        Just index -> do
+            -- printState states index
+            putStrLn ("Answer 2: " <> show index)
