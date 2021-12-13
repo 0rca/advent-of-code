@@ -1,7 +1,7 @@
 module Main where
 
 import Control.Monad (forM_)
-import Data.Foldable (maximumBy)
+import Data.Foldable (Foldable (foldl'), maximumBy)
 import Data.Function (on)
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -37,17 +37,19 @@ printMap page =
      in forM_ [0 .. maxY] $ \j -> do
             forM_ [0 .. maxX] $ \i ->
                 if Set.member (i, j) page
-                    then putStr "#"
-                    else putStr "."
+                    then do
+                        putStr "#"
+                    else do
+                        putStr " "
             putStrLn ""
 
-fold :: Fold -> Page -> Page
-fold (FoldY y) = Set.fromList . fmap (foldY y) . Set.toList
+foldPage :: Page -> Fold -> Page
+foldPage page (FoldY y) = Set.fromList . fmap (foldY y) . Set.toList $ page
   where
     foldY y (i, j)
         | j > y = (i, 2 * y - j)
         | otherwise = (i, j)
-fold (FoldX x) = Set.fromList . fmap (foldX x) . Set.toList
+foldPage page (FoldX x) = Set.fromList . fmap (foldX x) . Set.toList $ page
   where
     foldX x (i, j)
         | i > x = (2 * x - i, j)
@@ -59,6 +61,9 @@ getInput = do
 
 main = do
     (page, folds) <- getInput
-    print (Set.size (fold (head folds) page))
+    let ans1 = (Set.size (foldPage page (head folds)))
+    putStrLn ("Answer 1: " <> show ans1)
 
--- printMap (fold (FoldX 5) . fold (FoldY 7) $ page)
+    let ans2 = foldl' foldPage page folds
+    putStrLn ""
+    printMap ans2
