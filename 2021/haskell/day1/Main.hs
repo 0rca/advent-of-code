@@ -1,6 +1,9 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Main where
 
 import Data.Function (fix)
+import Data.Functor.Foldable
 import System.Environment
 
 readInts :: IO [Int]
@@ -15,13 +18,15 @@ main = do
         ["2"] ->
             print =<< ans2 <$> readInts
         ["2a"] ->
-            print =<< ans3 <$> readInts
+            print =<< ans2a <$> readInts
         ["2b"] ->
-            print =<< ans4 <$> readInts
+            print =<< ans2b <$> readInts
         ["2c"] ->
-            print =<< ans5 <$> readInts
+            print =<< ans2c <$> readInts
+        ["2d"] ->
+            print =<< ans2d <$> readInts
         _ ->
-            print ("Usage: cabal run day1 1|2|2a|2b|2c < input.txt")
+            print ("Usage: cabal run day1 1|2|2a|2b|2c|2d < input.txt")
 
 input1 = [199, 200, 208, 210, 200, 207, 240, 269, 260, 263]
 
@@ -35,6 +40,11 @@ ans1 xs = go xs 0
         | x1 > x0 = go (x1 : xs) (r + 1)
         | otherwise = go (x1 : xs) r
     go _ r = r
+
+ans1a :: [Int] -> Int
+ans1a xs = flip cata (zip xs (tail xs)) $ \case
+    Nil -> 0
+    Cons (x0, x1) sum -> if x1 > x0 then succ sum else sum
 
 input2 = [607, 618, 618, 617, 647, 716, 769, 792]
 
@@ -54,16 +64,16 @@ test =
     and
         [ ans1 input1 == 7
         , ans2 input2 == 5
-        , ans3 input2 == 5
-        , ans4 input2 == 5
-        , ans5 input2 == 5
+        , ans2a input2 == 5
+        , ans2b input2 == 5
+        , ans2c input2 == 5
         ]
 
 {-
   Brute force solution: generate list of windows, sum the numbers, feed into
   solution for part I
 -}
-ans3 xs = ans1 (map sum (windows 3 xs))
+ans2a xs = ans1 (map sum (windows 3 xs))
 
 -- | Generates a list of windows of size n from the input list
 windows n xs =
@@ -80,7 +90,7 @@ takeExactly n xs = go n [] xs
     go n ys (x : xs) = go (n - 1) (x : ys) xs
 
 -- Same solution as before, but accumulates sums directly
-ans4 xs = ans1 (sums 3 xs)
+ans2b xs = ans1 (sums 3 xs)
 
 sums n xs =
     case sumExactly n xs of
@@ -98,7 +108,7 @@ sumExactly n xs = go n 0 xs
 {- | esoteric solution: scanl1 for sums, fixpoint function for factoring out
  recursion
 -}
-ans5 xs =
+ans2c xs =
     ans1
         ( fix
             ( \rec xs ->
@@ -108,3 +118,8 @@ ans5 xs =
             )
             xs
         )
+
+ans2d xs = fold go (zip xs (drop 3 xs))
+  where
+    go Nil = 0
+    go (Cons (x0, x3) sum) = if x3 > x0 then sum + 1 else sum

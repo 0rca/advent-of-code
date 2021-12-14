@@ -6,7 +6,10 @@ maintainer:    alex.vzorov@gmail.com
 
 executable day1
   main-is:          Main.hs
-  build-depends:    base ^>=4.14.3.0
+  build-depends:
+    , base               ^>=4.14.3.0
+    , recursion-schemes
+
   hs-source-dirs:   haskell/day1
   default-language: Haskell2010
 
@@ -60,13 +63,20 @@ executable day7
 
 executable day8
   main-is:          Main.hs
-  build-depends:    base ^>=4.14.3.0, unordered-containers, containers
+  build-depends:
+    , base                  ^>=4.14.3.0
+    , containers
+    , unordered-containers
+
   hs-source-dirs:   haskell/day8
   default-language: Haskell2010
 
 executable day9
   main-is:          Main.hs
-  build-depends:    base ^>=4.14.3.0, vector
+  build-depends:
+    , base    ^>=4.14.3.0
+    , vector
+
   hs-source-dirs:   haskell/day9
   default-language: Haskell2010
 
@@ -78,18 +88,28 @@ executable day10
 
 executable day11
   main-is:          Main.hs
-  build-depends:    base ^>=4.14.3.0, containers, ansi-terminal
+  build-depends:
+    , ansi-terminal
+    , base           ^>=4.14.3.0
+    , containers
+
   hs-source-dirs:   haskell/day11
   default-language: Haskell2010
 
 executable day12
   main-is:          Main.hs
-  build-depends:    base ^>=4.14.3.0, containers
+  build-depends:
+    , base        ^>=4.14.3.0
+    , containers
+
   hs-source-dirs:   haskell/day12
   default-language: Haskell2010
 
 executable day13
   main-is:          Main.hs
-  build-depends:    base ^>=4.14.3.0, containers
+  build-depends:
+    , base        ^>=4.14.3.0
+    , containers
+
   hs-source-dirs:   haskell/day13
   default-language: Haskell2010
